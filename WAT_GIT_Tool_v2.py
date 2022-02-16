@@ -187,7 +187,7 @@ def gitCompare(options):
     for opt in options:
         if opt[0] == '--folder':
             folder = opt[1]
-        elif opt[0] == '--compare-to-remote'
+        elif opt[0] == '--compare-to-remote':
             comparisonType = opt[1]
     
     repo = connect2GITRepo(folder)
@@ -203,29 +203,50 @@ def gitCompare(options):
         differentCommits = compareCommits(repo)
 
         if len(differentCommits) > 0:
-            print_to_stdout(differentCommits)
+            print_to_stdout('Pending Changes:')
+            for commit in differentCommits:
+                print_to_stdout('\t'+commit)
         else:
             print_to_stdout("\nNo changed commits.")
 
     sys.exit(0)
 
 def compareCommits(repo):
+    remoteBranch = getCurrentBranchRemote(repo)
+    if remoteBranch is None:
+        print_to_stdout("\nBranch does not track a remote. Compare not possible.")
+        sys.exit(2)
+
     current_hex = repo.head.object.hexsha
-    repohex = repo.git.log('origin','--pretty=%H').split('\n')[0]
+    repohex = repo.git.log(remoteBranch,'--pretty=%H').split('\n')[0]
     if current_hex == repohex:
         return []
     else:
-        commits = repo.git.log(current_hex, repohex, '--oneline').split('\n')
+        commits = repo.git.log(current_hex+'...'+repohex, '--oneline').split('\n')
         return commits
 
 def compareFiles(repo):
+    remoteBranch = getCurrentBranchRemote(repo)
+    if remoteBranch is None:
+        print_to_stdout("\nBranch does not track a remote. Compare not possible.")
+        sys.exit(2)
+
     current_hex = repo.head.object.hexsha
-    repohex = repo.git.log('origin','--pretty=%H').split('\n')[0]
+    repohex = repo.git.log(remoteBranch,'--pretty=%H').split('\n')[0]
     if current_hex == repohex:
         return []
     else:
         changedFiles = repo.git.diff(current_hex, repohex, '--name-only').split('\n')
         return changedFiles
+
+def getCurrentBranchRemote(repo):
+    branchStatus = repo.git.status('-s','-b')
+    if '...' not in branchStatus:
+        return None
+
+    remoteBranchEndPart = branchStatus.split('...')[1]
+    remoteBranch = remoteBranchEndPart.split('[')[0].strip()
+    return remoteBranch
 
 # def getRepoChangedFiles(repo):
 #     changedRemote = repo.git.show('HEAD', pretty="", name_only=True).split('\n')
