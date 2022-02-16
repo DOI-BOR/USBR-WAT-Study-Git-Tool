@@ -111,16 +111,14 @@ def gitDownload(options):
     if '--donothing' not in opts:
         repo = connect2GITRepo(folder)
         changedFiles = getChangedFiles(repo)
+        repoChangedFiles = compareHexSha(repo)
         repo.git.reset('--hard')
         repo.git.pull()
-        repoChangedFiles = getRepoChangedFiles(repo)
         print_to_stdout('Download complete.')
         printChangedFiles([changedFiles, repoChangedFiles])
 
     else:
         print_to_stdout('Do nothing mode engaged.')
-
-
 
     sys.exit(0)
 
@@ -152,9 +150,48 @@ def gitChanges(options):
 
     sys.exit(0)
 
-def getRepoChangedFiles(repo):
-    changedRemote = repo.git.show('HEAD', pretty="", name_only=True).split('\n')
-    return changedRemote
+def gitFetch(options):
+    opts = []
+    for opt in options:
+        opts.append(opt[0])
+    if "--folder" not in opts:
+        print_to_stdout("--folder not included in clone.")
+        print_to_stdout("now exiting..")
+        sys.exit(1)
+
+    print_to_stdout("Made it to Fetch")
+
+    for opt in options:
+        if opt[0] == '--folder':
+            folder = opt[1]
+
+    print_to_stdout('USER HAS SELECTED:')
+    print_to_stdout('folder:', folder)
+
+    repo = connect2GITRepo(folder)
+
+    changedFiles = compareHexSha(repo)
+
+    if len(changedFiles) > 0:
+        printChangedFiles(changedFiles, message='Pending Changes:')
+    else:
+        print_to_stdout('\nNo files changed.')
+
+    sys.exit(0)
+
+def compareHexSha(repo):
+    repo.git.fetch()
+    current_hex = repo.head.object.hexsha
+    repohex = repo.git.log('origin','--pretty=%H').split('\n')[0]
+    if current_hex == repohex:
+        return []
+    else:
+        changedFiles = repo.git.diff(current_hex, repohex, '--name-only').split('\n')
+        return changedFiles
+
+# def getRepoChangedFiles(repo):
+#     changedRemote = repo.git.show('HEAD', pretty="", name_only=True).split('\n')
+#     return changedRemote
 
 def getChangedFiles(repo):
     untracked = repo.untracked_files
@@ -162,9 +199,12 @@ def getChangedFiles(repo):
     changedTracked = [n for n in changedFiles if n not in untracked]
     return changedTracked
 
-def printChangedFiles(changedFiles):
+def printChangedFiles(changedFiles, message="Files Changed:"):
     cFiles_frmt = formatChangedFiles(changedFiles)
-    print_to_stdout('Files Changed:')
+    if len(cFiles_frmt) == 0:
+        print_to_stdout('No files changed..')
+        return
+    print_to_stdout(message)
     for cfile in cFiles_frmt:
         if cfile != '':
             print_to_stdout("\t{0}".format(cfile))
@@ -222,7 +262,7 @@ def print_to_stdout(*a):
 def parseCommands():
     argv = sys.argv[1:]
     shortops = "cud"
-    longopts = ["clone", "upload", "download", "changes", "folder=",
+    longopts = ["clone", "upload", "download", "changes", "fetch", "folder=",
                 "comments=", "commentsfile=", "remote=", "donothing"]
     try:
         options, remainder = getopt.getopt(argv, shortops, longopts)
@@ -242,6 +282,8 @@ def parseCommands():
             gitDownload(options)
         elif opt in ['--changes']:
             gitChanges(options)
+        elif opt in ['--fetch']:
+            gitFetch(options)
 
 if __name__ == "__main__":
     parseCommands()
