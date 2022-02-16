@@ -196,18 +196,18 @@ def gitCompare(options):
         changedFiles = compareFiles(repo)
 
         if len(changedFiles) > 0:
-            printChangedFiles(changedFiles, message='Pending Changes:')
+            printChangedFiles(changedFiles, message='Pending Files:')
         else:
             print_to_stdout('\nNo files changed.')
     elif comparisonType.lower() == 'commits':
         differentCommits = compareCommits(repo)
 
         if len(differentCommits) > 0:
-            print_to_stdout('Pending Changes:')
+            print_to_stdout('Pending Commits:')
             for commit in differentCommits:
                 print_to_stdout('\t'+commit)
         else:
-            print_to_stdout("\nNo changed commits.")
+            print_to_stdout("\nNo new commits.")
 
     sys.exit(0)
 
