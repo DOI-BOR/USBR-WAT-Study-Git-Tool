@@ -79,10 +79,12 @@ def gitUpload(options):
 
     if '--donothing' not in opts:
         repo = connect2GITRepo(folder)
+        changedFiles = getChangedFiles(repo)
         repo.git.add('--all')
         repo.index.commit(comments)
         response = repo.remotes.origin.push()
         print_to_stdout('Upload complete.')
+        printChangedFiles(changedFiles)
     else:
         print_to_stdout('Do nothing mode engaged.')
 
@@ -108,11 +110,17 @@ def gitDownload(options):
 
     if '--donothing' not in opts:
         repo = connect2GITRepo(folder)
+        changedFiles = getChangedFiles(repo)
         repo.git.reset('--hard')
         repo.git.pull()
+        repoChangedFiles = getRepoChangedFiles(repo)
         print_to_stdout('Download complete.')
+        printChangedFiles([changedFiles, repoChangedFiles])
+
     else:
         print_to_stdout('Do nothing mode engaged.')
+
+
 
     sys.exit(0)
 
@@ -135,18 +143,41 @@ def gitChanges(options):
     print_to_stdout('folder:', folder)
 
     repo = connect2GITRepo(folder)
-    untracked = repo.untracked_files
-    changedFiles = [item.a_path for item in repo.index.diff(None)]
-    changedTracked = [n for n in changedFiles if n not in untracked]
+    changedTracked = getChangedFiles(repo)
 
     if len(changedTracked) > 0:
-        print_to_stdout("\nChanged tracked files:")
-        for fname in changedTracked:
-            print_to_stdout(fname)
+        printChangedFiles(changedTracked)
     else:
         print_to_stdout('\nNo tracked files changed.')
 
     sys.exit(0)
+
+def getRepoChangedFiles(repo):
+    changedRemote = repo.git.show('HEAD', pretty="", name_only=True).split('\n')
+    return changedRemote
+
+def getChangedFiles(repo):
+    untracked = repo.untracked_files
+    changedFiles = [item.a_path for item in repo.index.diff(None)]
+    changedTracked = [n for n in changedFiles if n not in untracked]
+    return changedTracked
+
+def printChangedFiles(changedFiles):
+    cFiles_frmt = formatChangedFiles(changedFiles)
+    print_to_stdout('Files Changed:')
+    for cfile in cFiles_frmt:
+        if cfile != '':
+            print_to_stdout("\t{0}".format(cfile))
+
+def formatChangedFiles(changedFiles):
+    if isinstance(changedFiles, (str, int, float)):
+        return [changedFiles]
+    elif isinstance(changedFiles, list):
+        changed = []
+        for cfile in changedFiles:
+            cfile_frmt = formatChangedFiles(cfile)
+            changed += cfile_frmt
+        return list(set(changed))
 
 def connect2GITRepo(repo_path):
     try:
