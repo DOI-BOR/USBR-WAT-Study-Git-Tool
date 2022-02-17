@@ -198,7 +198,7 @@ def gitCompare(options):
             print_to_stdout('\nNo files changed.')
     elif comparisonType.lower() == 'commits':
         differentCommits = compareCommits(repo)
-
+        
         if len(differentCommits) > 0:
             print_to_stdout('Pending Commits:')
             for commit in differentCommits:
@@ -214,13 +214,11 @@ def compareCommits(repo):
         print_to_stdout("\nBranch does not track a remote. Compare not possible.")
         sys.exit(2)
 
-    current_hex = repo.head.object.hexsha
-    repohex = repo.git.log('--pretty=%H', remoteBranch).split('\n')[0]
-    if current_hex == repohex:
-        return []
-    else:
-        commits = repo.git.log(current_hex+'...'+repohex, '--oneline').split('\n')
-        return commits
+    current_branch = repo.active_branch.name
+    commits = repo.git.log(current_branch+'...'+remoteBranch, '--oneline').strip()
+    if commits != '':
+        return commits.split('\n')
+    return []
 
 def compareFiles(repo):
     remoteBranch = getCurrentBranchRemote(repo)
@@ -228,13 +226,11 @@ def compareFiles(repo):
         print_to_stdout("\nBranch does not track a remote. Compare not possible.")
         sys.exit(2)
 
-    current_hex = repo.head.object.hexsha
-    repohex = repo.git.log('--pretty=%H', remoteBranch).split('\n')[0]
-    if current_hex == repohex:
-        return []
-    else:
-        changedFiles = repo.git.diff(current_hex, repohex, '--name-only').split('\n')
-        return changedFiles
+    current_branch = repo.active_branch.name
+    changedFiles = repo.git.diff(current_branch, remoteBranch, '--name-only').strip()
+    if changedFiles != '':
+        return changedFiles.split('\n')
+    return []
 
 def getCurrentBranchRemote(repo):
     branchStatus = repo.git.status('-s','-b')
