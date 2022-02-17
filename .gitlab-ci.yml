@@ -15,5 +15,5 @@ build-python-code:
     - "dist/**"
   script:
     - pip install -r requirements.txt
-    - pyinstaller WAT_GIT_Tool.py
-    - pyinstaller WAT_GIT_Tool_v2.py
+    - pyinstaller --onefile WAT_GIT_Tool.py
+    - pyinstaller --onefile WAT_GIT_Tool_v2.py
