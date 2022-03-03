@@ -105,12 +105,17 @@ def gitUpload(options):
                     changedFiles = getChangedFiles(repo_submod)
                     repo_submod.git.add('--all')
                     repo_submod.index.commit(comments)
+                    repo.git.add(submodule.path)
                     printChangedFiles(changedFiles)
 
-        repo.git.add("--all")
-        repo.index.commit(comments)
-        response = repo.remotes.origin.push(recurse_submodules="on-demand")
-        print_to_stdout('Upload complete.')
+        if '--main' in options.keys() or '--submodule' in options.keys():
+            # repo.git.add("--all")
+            repo.index.commit(comments)
+            response = repo.remotes.origin.push(recurse_submodules="on-demand")
+            print_to_stdout('Upload complete.')
+        else:
+            print_to_stdout("No upload target submitted.")
+            print_to_stdout("Use --main or --submodule")
 
     else:
         print_to_stdout('Do nothing mode engaged.')
