@@ -48,7 +48,7 @@ def gitClone(options):
     else:
         print_to_stdout('Do nothing mode engaged.')
 
-    sys.exit(0)
+    # sys.exit(0)
 
 def gitUpload(options):
     opts = options.keys()
@@ -123,7 +123,7 @@ def gitUpload(options):
     else:
         print_to_stdout('Do nothing mode engaged.')
 
-    sys.exit(0)
+    # sys.exit(0)
 
 def gitDownload(options):
     opts = options.keys()
@@ -158,7 +158,7 @@ def gitDownload(options):
             options['--main'] = ''
 
         if '--main' in options.keys():
-            gitCompare(options, repo=repo, exit=False)
+            gitCompare(options, repo=repo)
             changedlocals = getChangedFiles(repo)
             printChangedFiles(changedlocals, "The following files will be overwritten:")
             repo.git.reset('--hard')
@@ -171,7 +171,7 @@ def gitDownload(options):
                 if submodule.name in options['--submodule']:
                     print_to_stdout('\nDownloading Submodule:', submodule.name)
                     repo_submod = submodule.module()
-                    gitCompare(options, repo=repo_submod, exit=False)
+                    gitCompare(options, repo=repo_submod)
                     changedlocals = getChangedFiles(repo_submod)
                     printChangedFiles(changedlocals, "The following files will be overwritten:")
                     try:
@@ -183,7 +183,7 @@ def gitDownload(options):
     else:
         print_to_stdout('Do nothing mode engaged.')
 
-    sys.exit(0)
+    # sys.exit(0)
 
 def gitChanges(options):
     opts = options.keys()
@@ -241,7 +241,7 @@ def gitChanges(options):
     else:
         print_to_stdout("Do nothing mode engaged.")
 
-    sys.exit(0)
+    # sys.exit(0)
 
 def gitFetch(options):
     opts = options.keys()
@@ -281,9 +281,9 @@ def gitFetch(options):
                 if submodule.name in options['--submodule']:
                     repo_submod = submodule.module()
                     repo_submod.git.fetch()
-    sys.exit(1)
+    # sys.exit(1)
 
-def gitCompare(options, comparisonType='files', repo=None, exit=True):
+def gitCompare(options, comparisonType='files', repo=None):
     opts = list(options.keys())
 
     if "--folder" not in opts:
@@ -356,8 +356,8 @@ def gitCompare(options, comparisonType='files', repo=None, exit=True):
     else:
         print_to_stdout("Do nothing mode engaged.")
 
-    if exit:
-        sys.exit(0)
+    # if exit:
+    #     sys.exit(0)
 
 def gitListSubmodules(options):
     opts = list(options.keys())
@@ -380,7 +380,7 @@ def gitListSubmodules(options):
         for submodule in submodules:
             print_to_stdout(submodule.name)
 
-    sys.exit(0)
+    # sys.exit(0)
 
 def compareCommits(repo):
     remoteBranch = getCurrentBranchRemote(repo)
@@ -525,6 +525,8 @@ def parseCommands():
             gitCompare(options_frmt)
         elif opt in ['--listsubmodules']:
             gitListSubmodules(options_frmt)
+
+    sys.exit(0)
 
 if __name__ == "__main__":
     parseCommands()
