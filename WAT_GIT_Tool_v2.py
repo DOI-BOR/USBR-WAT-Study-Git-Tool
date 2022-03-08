@@ -512,19 +512,19 @@ def parseCommands():
 
     for opt in options_frmt.keys():
         if opt in ['c', "--clone"]:
-            gitClone(options_frmt)
+            gitClone(options_frmt.copy())
         elif opt in ['u', '--upload']:
-            gitUpload(options_frmt)
+            gitUpload(options_frmt.copy())
         elif opt in ['d', '--download']:
-            gitDownload(options_frmt)
+            gitDownload(options_frmt.copy())
         elif opt in ['--changes']:
-            gitChanges(options_frmt)
+            gitChanges(options_frmt.copy())
         elif opt in ['--fetch']:
-            gitFetch(options_frmt)
+            gitFetch(options_frmt.copy())
         elif opt in ['--compare-to-remote']:
-            gitCompare(options_frmt)
+            gitCompare(options_frmt.copy())
         elif opt in ['--listsubmodules']:
-            gitListSubmodules(options_frmt)
+            gitListSubmodules(options_frmt.copy())
 
     sys.exit(0)
 
