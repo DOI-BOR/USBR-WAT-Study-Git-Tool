@@ -146,9 +146,9 @@ def gitDownload(options):
         repo = connect2GITRepo(folder)
 
         if '--all' in options.keys():
-            if '--main' not in opts:
+            if '--main' not in options.keys():
                 options['--main'] = ''
-            if '--submodule' not in opts:
+            if '--submodule' not in options.keys():
                 options['--submodule'] = []
             for submodule in repo.submodules:
                 if submodule.name not in options['--submodule']:
@@ -202,13 +202,13 @@ def gitChanges(options):
     print_to_stdout('USER HAS SELECTED:')
     print_to_stdout('folder:', folder)
 
-    if '--donothing' not in opts:
+    if '--donothing' not in options.keys():
         repo = connect2GITRepo(folder)
 
         if '--all' in options.keys():
-            if '--main' not in opts:
+            if '--main' not in options.keys():
                 options['--main'] = ''
-            if '--submodule' not in opts:
+            if '--submodule' not in options.keys():
                 options['--submodule'] = []
             for submodule in repo.submodules:
                 if submodule.name not in options['--submodule']:
@@ -315,9 +315,9 @@ def gitCompare(options, comparisonType='files', repo=None):
     all_changed_files = []
     all_changed_commits = []
 
-    if '--donothing' not in opts:
+    if '--donothing' not in options.keys():
 
-        if '--main' in opts:
+        if '--main' in options.keys():
             if comparisonType.lower() == 'files':
                 changedFiles = compareFiles(repo)
                 all_changed_files += changedFiles
