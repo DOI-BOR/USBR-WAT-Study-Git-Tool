@@ -19,14 +19,13 @@ import traceback
 
 def gitClone(options):
     default_URL = r'https://gitlab.rmanet.app/RMA/usbr-water-quality/UpperSac-Submodules/uppersac.git' #default
-    opts = options.keys()
-    if "--folder" not in opts:
+    if "--folder" not in options.keys():
         print_to_stdout("--folder not included in input.")
         print_to_stdout("now exiting..")
         sys.exit(1)
     print_to_stdout("Made it to clone")
     remote = default_URL
-    for opt in opts:
+    for opt in options.keys():
         if opt == '--folder':
            folder = options[opt]
         elif opt == '--remote':
@@ -36,7 +35,7 @@ def gitClone(options):
     print_to_stdout('folder:', folder)
     print_to_stdout('remote:', remote)
 
-    if '--donothing' not in opts:
+    if '--donothing' not in options.keys():
         checkDestinationDirectory(folder)
         try:
             response = git.Repo.clone_from(remote, folder, multi_options=['--recurse-submodule'])
@@ -51,19 +50,18 @@ def gitClone(options):
     # sys.exit(0)
 
 def gitUpload(options):
-    opts = options.keys()
 
-    if "--folder" not in opts:
+    if "--folder" not in options.keys():
         print_to_stdout("--folder not included in clone.")
         print_to_stdout("now exiting..")
         sys.exit(1)
-    if '--comments' not in opts and '--commentsfile' not in opts:
+    if '--comments' not in options.keys() and '--commentsfile' not in options.keys():
         print_to_stdout("--comments or --commentsfile not included in input.")
         print_to_stdout("now exiting..")
         sys.exit(1)
     print_to_stdout("Made it to upload")
 
-    for opt in opts:
+    for opt in options.keys():
         if opt == '--folder':
             folder = options[opt]
         elif opt == '--comments':
@@ -76,13 +74,13 @@ def gitUpload(options):
     print_to_stdout('folder:', folder)
     print_to_stdout('comments:\n{0}'.format(comments))
 
-    if '--donothing' not in opts:
+    if '--donothing' not in options.keys():
         repo = connect2GITRepo(folder)
 
         if '--all' in options.keys():
-            if '--main' not in opts:
+            if '--main' not in options.keys():
                 options['--main'] = ''
-            if '--submodule' not in opts:
+            if '--submodule' not in options.keys():
                 options['--submodule'] = []
             for submodule in repo.submodules:
                 if submodule.name not in options['--submodule']:
@@ -126,29 +124,28 @@ def gitUpload(options):
     # sys.exit(0)
 
 def gitDownload(options):
-    opts = options.keys()
 
-    if "--folder" not in opts:
+    if "--folder" not in options.keys():
         print_to_stdout("--folder not included in clone.")
         print_to_stdout("now exiting..")
         sys.exit(1)
 
     print_to_stdout("Made it to download")
 
-    for opt in opts:
+    for opt in options.keys():
         if opt == '--folder':
             folder = options[opt]
 
     print_to_stdout('USER HAS SELECTED:')
     print_to_stdout('folder:', folder)
 
-    if '--donothing' not in opts:
+    if '--donothing' not in options.keys():
         repo = connect2GITRepo(folder)
 
         if '--all' in options.keys():
-            if '--main' not in opts:
+            if '--main' not in options.keys():
                 options['--main'] = ''
-            if '--submodule' not in opts:
+            if '--submodule' not in options.keys():
                 options['--submodule'] = []
             for submodule in repo.submodules:
                 if submodule.name not in options['--submodule']:
@@ -186,29 +183,28 @@ def gitDownload(options):
     # sys.exit(0)
 
 def gitChanges(options):
-    opts = options.keys()
 
-    if "--folder" not in opts:
+    if "--folder" not in options.keys():
         print_to_stdout("--folder not included in clone.")
         print_to_stdout("now exiting..")
         sys.exit(1)
 
     print_to_stdout("Made it to Changes")
 
-    for opt in opts:
+    for opt in options.keys():
         if opt == '--folder':
             folder = options[opt]
 
     print_to_stdout('USER HAS SELECTED:')
     print_to_stdout('folder:', folder)
 
-    if '--donothing' not in opts:
+    if '--donothing' not in options.keys():
         repo = connect2GITRepo(folder)
 
         if '--all' in options.keys():
-            if '--main' not in opts:
+            if '--main' not in options.keys():
                 options['--main'] = ''
-            if '--submodule' not in opts:
+            if '--submodule' not in options.keys():
                 options['--submodule'] = []
             for submodule in repo.submodules:
                 if submodule.name not in options['--submodule']:
@@ -244,9 +240,8 @@ def gitChanges(options):
     # sys.exit(0)
 
 def gitFetch(options):
-    opts = options.keys()
 
-    if "--folder" not in opts:
+    if "--folder" not in options.keys():
         print_to_stdout("--folder not included in clone.")
         print_to_stdout("now exiting..")
         sys.exit(1)
@@ -284,14 +279,13 @@ def gitFetch(options):
     # sys.exit(1)
 
 def gitCompare(options, comparisonType='files', repo=None):
-    opts = list(options.keys())
 
-    if "--folder" not in opts:
+    if "--folder" not in options.keys():
         print_to_stdout("--folder not included in options.")
         print_to_stdout("now exiting..")
         sys.exit(1)
 
-    for opt in opts:
+    for opt in options.keys():
         if opt == '--folder':
             folder = options[opt]
         elif opt == '--compare-to-remote':
@@ -300,10 +294,10 @@ def gitCompare(options, comparisonType='files', repo=None):
     if repo == None:
         repo = connect2GITRepo(folder)
 
-    if '--all' in opts:
-        if '--main' not in opts:
-            opts.append('--main')
-        if '--submodule' not in opts:
+    if '--all' in options.keys():
+        if '--main' not in options.keys():
+            options.keys().append('--main')
+        if '--submodule' not in options.keys():
             options['--submodule'] = []
         for submodule in repo.submodules:
             if submodule.name not in options['--submodule']:
@@ -315,9 +309,9 @@ def gitCompare(options, comparisonType='files', repo=None):
     all_changed_files = []
     all_changed_commits = []
 
-    if '--donothing' not in opts:
+    if '--donothing' not in options.keys():
 
-        if '--main' in opts:
+        if '--main' in options.keys():
             if comparisonType.lower() == 'files':
                 changedFiles = compareFiles(repo)
                 all_changed_files += changedFiles
@@ -360,14 +354,13 @@ def gitCompare(options, comparisonType='files', repo=None):
     #     sys.exit(0)
 
 def gitListSubmodules(options):
-    opts = list(options.keys())
 
-    if "--folder" not in opts:
+    if "--folder" not in options.keys():
         print_to_stdout("--folder not included in options.")
         print_to_stdout("now exiting..")
         sys.exit(1)
 
-    for opt in opts:
+    for opt in options.keys():
         if opt == '--folder':
             folder = options[opt]
 
