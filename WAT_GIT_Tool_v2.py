@@ -447,7 +447,7 @@ def gitCheckPushability(options):
             print_to_stdout('\nERROR: Cannot upload with pending commits.')
             sys.exit(1)
 
-        print_to_stdout('\nOk to push!')
+        print_to_stdout('\nOk to upload!')
 
 #TODO: This
 
