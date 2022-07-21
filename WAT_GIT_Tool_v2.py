@@ -17,7 +17,7 @@ import git
 import getopt
 import traceback
 
-VERSION_NUMBER = '3.0'
+VERSION_NUMBER = '3.1'
 
 def gitClone(options):
     default_URL = r'https://gitlab.rmanet.app/RMA/usbr-water-quality/UpperSac-Submodules/uppersac.git' #default
@@ -53,8 +53,6 @@ def gitClone(options):
 
     else:
         print_to_stdout('Do nothing mode engaged.')
-
-    # sys.exit(0)
 
 def gitUpload(options):
 
@@ -105,6 +103,7 @@ def gitUpload(options):
                     repo_submod.git.add('--all')
                     repo_submod.index.commit(comments)
                     repo.git.add(submodule.path)
+                    print_to_stdout('Checking tracked local files..')
                     printChangedFiles(changedFiles)
 
         if '--main' in options.keys():
@@ -112,6 +111,7 @@ def gitUpload(options):
             repo.git.add('--all')
             # repo.index.commit(comments)
             # response = repo.remotes.origin.push()
+            print_to_stdout('Checking tracked local files..')
             printChangedFiles(changedFiles)
 
         if '--main' in options.keys() or '--submodule' in options.keys():
@@ -131,8 +131,6 @@ def gitUpload(options):
 
     else:
         print_to_stdout('Do nothing mode engaged.')
-
-    # sys.exit(0)
 
 def gitDownload(options):
 
@@ -169,6 +167,7 @@ def gitDownload(options):
         if '--main' in options.keys():
             gitCompare(options, repo=repo)
             changedlocals = getChangedFiles(repo)
+            print_to_stdout('Checking tracked local files..')
             printChangedFiles(changedlocals, "The following files will be overwritten:")
             try:
                 repo.git.reset('--hard')
@@ -193,6 +192,7 @@ def gitDownload(options):
                     gitCompare(options, repo=repo, subrepo=submodule.name)
                     # gitCompare(options, repo=repo)
                     changedlocals = getChangedFiles(repo_submod)
+                    print_to_stdout('Checking tracked local files..')
                     printChangedFiles(changedlocals, "The following files will be overwritten:")
                     try:
                         repo_submod.git.reset('--hard')
@@ -212,7 +212,6 @@ def gitDownload(options):
 
     else:
         print_to_stdout('Do nothing mode engaged.')
-
 
 def gitChanges(options):
 
@@ -261,6 +260,7 @@ def gitChanges(options):
                     for cfile in changedTracked:
                         changed_file_list.append('{0}/{1}'.format(submodule.path, cfile))
 
+        print_to_stdout('Checking tracked local files..')
         if len(changed_file_list) > 0:
             printChangedFiles(changed_file_list)
         else:
@@ -304,7 +304,6 @@ def gitFetch(options):
                 if submodule.name in options['--submodule']:
                     repo_submod = submodule.module()
                     repo_submod.git.fetch()
-
 
 def gitCompare(options, comparisonType='files', repo=None, subrepo=None, returnlist=False):
 
@@ -375,11 +374,13 @@ def gitCompare(options, comparisonType='files', repo=None, subrepo=None, returnl
                         print_to_stdout(f'ERROR: cannot compare {submodule.name}')
 
         if comparisonType.lower() == 'files':
+            print_to_stdout('Checking for changed files on the server..')
             if len(all_changed_files) > 0:
                 printChangedFiles(all_changed_files, message='Pending Files:')
             else:
                 print_to_stdout('\nNo files changed.')
         elif comparisonType.lower() == 'commits':
+            print_to_stdout('Checking for new commits on the server..')
             if len(all_changed_commits) > 0:
                 printChangedFiles(all_changed_commits, message='Pending Commits:')
             else:
@@ -390,9 +391,6 @@ def gitCompare(options, comparisonType='files', repo=None, subrepo=None, returnl
         print_to_stdout("Do nothing mode engaged.")
         if returnlist:
             return []
-
-    # if exit:
-    #     sys.exit(0)
 
 def gitListSubmodules(options):
 
@@ -412,8 +410,6 @@ def gitListSubmodules(options):
         print_to_stdout('\nSubmodules in main repo:')
         for submodule in submodules:
             print_to_stdout(submodule.name)
-
-    # sys.exit(0)
 
 def gitCheckPushability(options):
 
@@ -471,57 +467,6 @@ def gitCheckPushability(options):
 
         print_to_stdout('\nOk to upload!')
 
-#TODO: This
-
-# def resetDivergedBranch(options):
-#
-#     if "--folder" not in options.keys():
-#         print_to_stdout("--folder not included in options.")
-#         sys.exit(1)
-#
-#     for opt in options.keys():
-#         if opt == '--folder':
-#             folder = options[opt]
-#
-#     if '--donothing' not in options.keys():
-#         repo = connect2GITRepo(folder)
-#
-#         if '--all' in options.keys():
-#             if '--main' not in options.keys():
-#                 options['--main'] = ''
-#             if '--submodule' not in options.keys():
-#                 options['--submodule'] = []
-#             for submodule in repo.submodules:
-#                 if submodule.name not in options['--submodule']:
-#                     options['--submodule'].append(submodule.name)
-#
-#         if not any(x in options.keys() for x in ['--all', '--main', '--submodule']):
-#             options['--main'] = ''
-#
-#         if '--main' in options.keys():
-#             #git checkout main
-#             #git branch -D main
-#             #git switch -C main
-#             repo.git.merge('--abort')
-#             repo.git.checkout('origin/main')
-#             repo.git.branch('-D', 'main')
-#             repo.git.branch('main')
-#             repo.git.checkout('main')
-#
-#         if '--submodule' in options.keys():
-#             if isinstance(options['--submodule'], str):
-#                 options['--submodule'] = [options['--submodule']]
-#             for submodule in repo.submodules:
-#                 if submodule.name in options['--submodule']:
-#                     print_to_stdout('\nDownloading Submodule:', submodule.name)
-#                     repo_submod = submodule.module()
-#                     repo_submod.git.merge('--abort')
-#                     repo_submod.git.checkout('origin/main')
-#                     repo_submod.git.branch('-D', 'main')
-#                     repo_submod.git.branch('main')
-#                     repo_submod.git.checkout('main')
-
-
 def gitRestore(options):
     if "--folder" not in options.keys():
         print_to_stdout("\nERROR: --folder not included in options.")
@@ -532,7 +477,7 @@ def gitRestore(options):
             folder = options[opt]
 
     if not os.path.exists(folder):
-        print_to_stdout(f'\nERROR: Specified Git folder {folder} does not exist.')
+        print_to_stdout(f'\nERROR: Specified Git folder {folder} does not exist. Unable to restore.')
         sys.exit(1)
 
     if '--donothing' not in options.keys():
@@ -556,6 +501,8 @@ def gitRestore(options):
                     submod_folder = os.path.join(folder, submodule.path)
                     repo.git.restore(submod_folder, recurse_submodules=True)
                     submodule.module().git.checkout('main')
+    else:
+        print_to_stdout("Do nothing mode engaged.")
 
 def compareCommits(repo):
     remoteBranch = getCurrentBranchRemote(repo)
