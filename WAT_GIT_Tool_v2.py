@@ -17,7 +17,7 @@ import git
 import getopt
 import traceback
 
-VERSION_NUMBER = '3.2.1'
+VERSION_NUMBER = '3.2.2'
 
 def gitClone(options):
     default_URL = r'https://gitlab.rmanet.app/RMA/usbr-water-quality/UpperSac-Submodules/uppersac.git' #default
@@ -703,7 +703,9 @@ def formatChangedFiles(changedFiles):
         for cfile in changedFiles:
             cfile_frmt = formatChangedFiles(cfile)
             changed += cfile_frmt
-        return list(set(changed))
+        changed = list(set(changed))
+        changed = sorted(changed, key=str.casefold)
+        return changed
 
 def connect2GITRepo(repo_path):
     try:
