@@ -17,7 +17,7 @@ import git
 import getopt
 import traceback
 
-VERSION_NUMBER = '3.2.4'
+VERSION_NUMBER = '3.2.5'
 
 def gitClone(options):
     if "--folder" not in options.keys():
@@ -625,21 +625,34 @@ def gitRestore(options):
 
         if '--all' in options.keys():
             print_to_stdout('Restoring all.')
-            repo.git.restore(folder, recurse_submodules=True)
+            try:
+                repo.git.restore(folder, recurse_submodules=True)
+            except:
+                print_to_stdout("\nError restoring All:")
+                print_to_stdout(traceback.format_exc())
+
             for submodule in repo.submodules:
                 repo_submod = submodule.module()
                 repo_submod.git.checkout('main')
 
         if '--main' in options.keys():
             print_to_stdout('Restoring main study module.')
-            repo.git.restore(folder, recurse_submodules=False)
+            try:
+                repo.git.restore(folder, recurse_submodules=False)
+            except:
+                print_to_stdout("\nError restoring Main:")
+                print_to_stdout(traceback.format_exc())
 
         if '--submodule' in options.keys():
             for submodule in repo.submodules:
                 if submodule.name in options['--submodule']:
                     print_to_stdout(f'Restoring {submodule.name}.')
                     submod_folder = os.path.join(folder, submodule.path)
-                    repo.git.restore(submod_folder, recurse_submodules=True)
+                    try:
+                        repo.git.restore(submod_folder, recurse_submodules=True)
+                    except:
+                        print_to_stdout(f"\nError restoring {submodule.name}:")
+                        print_to_stdout(traceback.format_exc())
                     submodule.module().git.checkout('main')
 
         print_to_stdout('Restore complete.')
