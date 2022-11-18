@@ -20,7 +20,7 @@ import traceback
 from glob import glob
 import default_GitIgnores
 
-VERSION_NUMBER = '3.3.0'
+VERSION_NUMBER = '3.3.1'
 
 def gitClone(options):
     if "--folder" not in options.keys():
@@ -329,7 +329,8 @@ def gitCreateRepo(options):
     ################ GIT INFO #################
     # parent = r'https://gitlab.rmanet.app/'
     # parent_urlpath = "RMA/usbr-water-quality/wtmp-development-study/scott-test-realm"
-    token = 'glpat-_GppFhUUibK4z_bW-x9B' #??????
+    # token = 'glpat-_GppFhUUibK4z_bW-x9B' #Scott test repo specific token
+    token = 'glpat-x_xnAYTCXPJy9ysiisSc'
     ############################################
 
     if '--donothing' in options.keys():
