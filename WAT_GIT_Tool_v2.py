@@ -23,7 +23,7 @@ import shutil
 import stat
 import default_GitIgnores
 
-VERSION_NUMBER = '3.3.3'
+VERSION_NUMBER = '3.3.4'
 
 def gitClone(options):
     if "--folder" not in options.keys():
@@ -405,6 +405,7 @@ def gitForkRepo(sourcefolder, newreponame, parent, newrepo_urlpath, description,
 
     ### Fork projects
     old_repo_submodules = [n.name for n in repo.submodules]
+    # wait = {}
     for project in old_repo_group.projects.list():
         project_id = project.id
         current_project = gl.projects.get(project_id)
@@ -414,29 +415,36 @@ def gitForkRepo(sourcefolder, newreponame, parent, newrepo_urlpath, description,
                                                  'path': current_project.name})
             current_project.delete_fork_relation()
 
-            #detect main
-            if fork.name not in old_repo_submodules:
-                #main repo!
-                repo.remote('origin').set_url(fork.web_url)
-            else:
-                for submod in repo.submodules:
-                    if submod.name == fork.name:
-                        subrepo = submod.module()
-                        break
-                subrepo.remote('origin').set_url(fork.web_url)
-
             num_attempts = 1
-            max_attempts = 5
+            max_attempts = 500
             while num_attempts <= max_attempts:
                 if gl.projects.get(fork.id).empty_repo and not current_project.empty_repo:
-                    print_to_stdout(f'Waiting for GIT Repo {fork.name} to refresh. Attempt: {num_attempts}')
+                    if num_attempts % 5 == 0:
+                        print_to_stdout(f'Waiting for GIT Repo {fork.name} to finish. Attempt: {num_attempts}')
                     time.sleep(3)
                     num_attempts += 1
                 else:
                     break
 
+            if num_attempts > max_attempts:
+                print_to_stdout(f'GIT Server took too long to fork for repo {fork.name}.')
+                print_to_stdout('GIT repo still connected to old repo')
+                print_to_stdout('Reduce GIT repo size and try again.')
+                sys.exit(1)
+
         except gitlab.exceptions.GitlabCreateError:
             print_to_stdout(f'project {project.name} already exists.')
+
+    for fork in new_subgroup.projects.list():
+        if fork.name not in old_repo_submodules:
+            #main repo!
+            repo.remote('origin').set_url(fork.web_url)
+        else:
+            for submod in repo.submodules:
+                if submod.name == fork.name:
+                    subrepo = submod.module()
+                    break
+            subrepo.remote('origin').set_url(fork.web_url)
 
     #modify gitmodules
     gitmodules_file = os.path.join(sourcefolder, '.gitmodules')
@@ -842,12 +850,16 @@ def gitRemoveRepoConnection(sourcefolder):
         gitfiles.append(os.path.join(sourcefolder, ".git"))
     try:
         for gitfile in gitfiles:
-            for root, dirs, files in os.walk(gitfile):
-                for dir in dirs:
-                    os.chmod(os.path.join(root, dir), stat.S_IRWXU)
-                for file in files:
-                    os.chmod(os.path.join(root, file), stat.S_IRWXU)
-            shutil.rmtree(gitfile)
+            if os.path.isdir(gitfile):
+                for root, dirs, files in os.walk(gitfile):
+                    for dir in dirs:
+                        os.chmod(os.path.join(root, dir), stat.S_IRWXU)
+                    for file in files:
+                        os.chmod(os.path.join(root, file), stat.S_IRWXU)
+                shutil.rmtree(gitfile)
+            else:
+                os.chmod(gitfile, stat.S_IRWXU)
+                os.remove(gitfile)
         return True
     except:
         print_to_stdout('Error while removing .GIT files.')
