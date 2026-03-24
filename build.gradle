@@ -84,7 +84,7 @@ tasks.register("zipPython", Zip) {
     destinationDirectory = file("$projectDir/build")
 
     eachFile { fileCopyDetails ->
-        fileCopyDetails.setRelativePath(fileCopyDetails.getRelativePath().prepend("HEC-WAT/AutomatedReport"))
+        fileCopyDetails.setRelativePath(fileCopyDetails.getRelativePath().prepend("tools"))
     }
 }
 
